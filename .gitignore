@@ -4,8 +4,8 @@
 
 #编译生成的目标文件
 target/
+out/
 
 #非公开文件
-gaoyang-service/
 *Test.java
 javalogfile/
