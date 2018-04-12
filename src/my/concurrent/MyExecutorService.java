@@ -15,7 +15,7 @@ public class MyExecutorService implements Executor {
 
     public void execute(Runnable command) {
         int count = threadCount.addAndGet(1);
-        System.out.println("执行第" + count + "个线程！");
+        System.out.println("提交第" + count + "个线程！");
         executorService.execute(command);
     }
 
@@ -25,7 +25,7 @@ public class MyExecutorService implements Executor {
 
     public <T> Future<T> submit(Callable<T> callable) {
         int count = threadCount.addAndGet(1);
-        System.out.println("执行第" + count + "个线程！");
+        System.out.println("提交第" + count + "个线程！");
         return executorService.submit(callable);
     }
 
@@ -43,9 +43,14 @@ public class MyExecutorService implements Executor {
             long keepAliveTime = 0L;
             TimeUnit unit = TimeUnit.NANOSECONDS;
             //初始化工作队列，设定队列大小为3
-            BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(3);
+            BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(2);
             ThreadFactory threadFactory = Executors.defaultThreadFactory();
-            RejectedExecutionHandler handler = new ThreadPoolExecutor.AbortPolicy();//取消策略，当加入工作任务超过工作队列大小后抛出异常RejectedExecutionException
+            RejectedExecutionHandler handler = new ThreadPoolExecutor.DiscardPolicy();
+            //AbortPolicy 取消策略，当工作队列满后再加入任务会抛出异常RejectedExecutionException
+            //DiscardPolicy 丢弃策略，当工作队列满后再加入任务会丢弃该任务
+            //DiscardOldestPolicy 丢弃策略，当工作队列满后再加入任务会丢弃队列中队头的任务，然后将该任务加入工作队列
+            //CallerRunsPolicy 运行策略，当工作队列满后再加入任务，该任务会在执行executor()或submit()的线程中被执行
+
             myExecutorService.executorService = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime,
                     unit, workQueue, threadFactory, handler);
         }
@@ -67,11 +72,15 @@ public class MyExecutorService implements Executor {
         long keepAliveTime = 0L;
         TimeUnit unit = TimeUnit.NANOSECONDS;
         //初始化工作队列，设定队列大小为3
-        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(3);
+        BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(2);
         ThreadFactory threadFactory = Executors.defaultThreadFactory();
         RejectedExecutionHandler handler = new ThreadPoolExecutor.AbortPolicy();
         myExecutorService.executorService = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime,
                 unit, workQueue, threadFactory, handler);
         return myExecutorService;
+    }
+
+    public int getCount(){
+        return threadCount.get();
     }
 }
